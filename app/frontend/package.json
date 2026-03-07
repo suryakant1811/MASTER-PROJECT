@@ -15,6 +15,7 @@
     "@emotion/react": "^11.13.3",
     "add": "^2.0.6",
     "chakra": "^0.0.3",
+    "dotenv": "^17.3.1",
     "mern": "file:..",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
