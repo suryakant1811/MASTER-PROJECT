@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Configmap
 metadata:
-  name: config-for-deployment
+  name: app-config
 
 data:
   VITE_API: "http://localhost:7777"
