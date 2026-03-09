@@ -22,8 +22,8 @@ pipeline{
                 dir('app/backend'){
                     sh ''' 
                         docker run --rm \
-                        -e SONAR_HOST_URL="\${SONAR_HOST}" \
-                        -e SONAR_LOGIN="\${SONAR_TOKEN}" \
+                        -e SONAR_HOST_URL="http://15.206.128.4:9000/" \
+                        -e SONAR_LOGIN="${SONAR_TOKEN}" \
                         -v \$(pwd):/usr/src \
                         sonarsource/sonar-scanner-cli \
                         -Dsonar.projectKey=backend \
