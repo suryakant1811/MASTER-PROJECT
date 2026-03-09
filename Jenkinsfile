@@ -5,11 +5,11 @@ pipeline{
     stages{
 
         stage("Cloning"){
-            step{ sh 'echo cloning repo' }
+            steps{ sh 'echo cloning repo' }
         }
 
         stage("Test"){
-            step{ sh 'echo testing code'}
+            steps{ sh 'echo testing code'}
         }
 
         stage("Building"){
