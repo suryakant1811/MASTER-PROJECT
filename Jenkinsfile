@@ -21,7 +21,7 @@ pipeline{
         }
 
         stage("deploy"){
-            steps {sh 'echo we are live now'}
+            steps {sh 'echo we are live now...'}
         }
 
     }
