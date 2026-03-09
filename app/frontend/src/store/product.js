@@ -13,7 +13,7 @@ export const useProductStore = create((set) => ({
             return { success: false, message: "Fill all fields" };
         }
 
-        const res = await fetch(`${API}/api/products`, {
+        const res = await fetch(`/api/products`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -32,13 +32,13 @@ export const useProductStore = create((set) => ({
     },
 
     fetchProducts: async () => {
-        const res = await fetch(`${API}/api/products`);
+        const res = await fetch(`/api/products`);
         const data = await res.json();
         set({ products: data.data });
     },
 
     deleteProduct: async (pid) => {
-        const res = await fetch(`${API}/api/products/${pid}`, {
+        const res = await fetch(`/api/products/${pid}`, {
             method: "DELETE",
         });
         const data = await res.json();
@@ -54,7 +54,7 @@ export const useProductStore = create((set) => ({
     },
 
     updateProduct: async (pid, updateProduct) => {
-        const res = await fetch(`${API}/api/products/${pid}`, {
+        const res = await fetch(`/api/products/${pid}`, {
             method: "PUT",
             headers: { // Change this to wrap headers correctly
                 "Content-Type": "application/json",

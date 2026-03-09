@@ -4,7 +4,8 @@ metadata:
   name: frontend-service
 
 spec:
-  type: LoadBalancer
+  # type: LoadBalancer      #directly get a lb and can access frontend through it 
+  type: ClusterIP
 
   selector:
     app: frontend
