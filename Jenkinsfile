@@ -116,7 +116,7 @@ pipeline{
 // SMTP server: smtp.gmail.com
 // SMTP Port: 587
 // Use SMTP Authentication: ✔
-// Username: yourgmail@gmail.com
+// Username: yourgmail@gmail.com     //google app password
 // Password: Gmail App Password
 // Use TLS: ✔
 
@@ -126,7 +126,7 @@ pipeline{
 
 // sudo apt install docker.io -y
 // sudo usermod -aG docker jenkins
-// sudo newgrp docker
+// sudo newgrp docker 
 // sudo systemctl restart docker
 
 // ==================================================================================================== trivy
