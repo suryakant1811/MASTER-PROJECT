@@ -9,8 +9,6 @@ RUN npm install
 
 COPY . .
 
-ENV VITE_API=http://backend-service:7777
-
 RUN npm run build 
 
 # ============================== PRODUCTION STAGE =============================
