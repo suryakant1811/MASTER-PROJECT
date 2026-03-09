@@ -2,28 +2,90 @@ pipeline{
 
     agent any 
 
+    environment {
+    SONAR_HOST = credentials('sonar-host')  
+    SONAR_TOKEN = credentials('sonar-token')   
+}
+
     stages{
 
         stage("Cloning"){
             steps{ 
-                
-             }
+                echo "Cloning Repo..."
+                git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
+                }
         }
 
-        stage("Test"){
-            steps{ sh 'echo testing code'}
+        stage("Testing backend using sonarqube"){
+            steps{
+                echo "Running SonarQube scan for backend..."
+                dir('app/backend'){
+                    sh ''' 
+                        docker run --rm \
+                        -e SONAR_HOST_URL="\${SONAR_HOST}" \
+                        -e SONAR_LOGIN="\${SONAR_TOKEN}" \
+                        -v \$(pwd):/usr/src \
+                        sonarsource/sonar-scanner-cli \
+                        -Dsonar.projectKey=backend \
+                        -Dsonar.sources=.
+                    ''' 
+                }
+            }
         }
 
-        stage("Building"){
-            steps{ sh 'echo building ' }
+        stage("Testing frontend using sonarqube"){
+            steps{
+                echo "Running SonarQube for frontend..."
+                dir('app/frontend'){
+                    sh ''' 
+                        docker run --rm \
+                        -e SONAR_HOST_URL="${SONAR_HOST}" \
+                        -e SONAR_LOGIN="${SONAR_TOKEN}" \
+                        -v \$(pwd):/usr/src \
+                        sonarsource/sonar-scanner-cli \
+                        -Dsonar.projectKey=frontend \
+                        -Dsonar.sources=.
+                    '''
+                }
+            }
         }
 
-        stage("Docker images uploade"){
-            steps{sh 'echo dockerhub image upload'}
+        stage("Building and pushing Docker imgage"){
+            steps{
+                echo "Building and pushing backend images"
+                dir('app/backend'){
+                    sh " docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+                    sh " docker push suryasuraj/server:${BUILD_NUMBER} "
+                }
+                echo "Building and pushing frontend images"
+                dir('app/frontend'){
+                    sh " docker build -t suryasuraj/client:${BUILD_NUMBER} ."
+                    sh " docker push suryasuraj/client:${BUILD_NUMBER} "
+                }
+            }
         }
 
-        stage("deploy"){
-            steps {sh 'echo we are live now...'}
+        stage("Trivy scan"){
+            steps{
+                echo "scanning backend image..."
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
+                echo "scanning frontend image..."
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
+            }
+        }
+
+         stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying backend and frontend to Kubernetes..."
+                dir('kubernetes') {
+                    sh """
+                    kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
+                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/frontend:${BUILD_NUMBER} -n default --record
+                    kubectl rollout status deployment/backend-deployment -n default
+                    kubectl rollout status deployment/frontend-deployment -n default
+                    """
+                }
+            }
         }
 
     }
@@ -48,7 +110,17 @@ pipeline{
 
     }
 }
- 
+// ==================================================================================================  Extended email jenkins
+
+
+// SMTP server: smtp.gmail.com
+// SMTP Port: 587
+// Use SMTP Authentication: ✔
+// Username: yourgmail@gmail.com
+// Password: Gmail App Password
+// Use TLS: ✔
+
+
 // ====================================================================================================  docker
 
 
@@ -58,9 +130,9 @@ pipeline{
 
 // ==================================================================================================== trivy
 
-// sudo apt install wget apt-transport-https gnupg -y
-// wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-// echo deb https://aquasecurity.github.io/trivy-repo/deb stable main | sudo tee /etc/apt/sources.list.d/trivy.list
+// sudo apt install -y wget apt-transport-https gnupg lsb-release
+// wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy-archive-keyring.gpg
+// echo "deb [signed-by=/usr/share/keyrings/trivy-archive-keyring.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
 // sudo apt update
 // sudo apt install trivy -y
 
@@ -74,3 +146,11 @@ pipeline{
 //   -p 9000:9000 \
 //   -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
 //   sonarqube:9.9-community
+
+// install scanner then url of instance and token 
+
+// docker run --rm \
+//   -e SONAR_HOST_URL="http://localhost:9000" \
+//   -e SONAR_LOGIN="<your-token>" \
+//   -v $(pwd):/usr/src \
+//   sonarsource/sonar-scanner-cli
