@@ -126,6 +126,7 @@ pipeline{
 
 // sudo apt install docker.io -y
 // sudo usermod -aG docker jenkins
+// sudo newgrp docker
 // sudo systemctl restart docker
 
 // ==================================================================================================== trivy
@@ -147,10 +148,10 @@ pipeline{
 //   -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
 //   sonarqube:9.9-community
 
-// install scanner then url of instance and token 
+// install scanner inside ci using url of instance and token to run the scaaner 
 
 // docker run --rm \
-//   -e SONAR_HOST_URL="http://localhost:9000" \
-//   -e SONAR_LOGIN="<your-token>" \
+//   -e SONAR_HOST_URL="http://13.235.79.139:9000" \
+//   -e SONAR_LOGIN="squ_d9f03b7451f13fff9b4449732ec12b1121b1e357" \
 //   -v $(pwd):/usr/src \
 //   sonarsource/sonar-scanner-cli
