@@ -125,15 +125,29 @@ pipeline {
 
     stages {
 
-        stage("Cloning") {
-            steps {
-                echo "**************************************************************************************"
-                echo "${SONAR_TOKEN} "
-                echo "${SONAR_HOST} "
-                echo "**************************************************************************************"
-                // git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
-            }
+        stage("Use Sonar Credentials") {
+    steps {
+        withCredentials([
+            string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')
+        ]) {
+            sh '''
+            echo "Using Sonar Host: $SONAR_HOST"
+            echo "Token length check:"
+            echo ${#SONAR_TOKEN}
+            '''
         }
+    }
+}
+
+        // stage("Cloning") {
+        //     steps {
+        //         echo "**************************************************************************************"
+        //         echo "${SONAR_TOKEN} "
+        //         echo "${SONAR_HOST} "
+        //         echo "**************************************************************************************"
+        //         // git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
+        //     }
+        // }
 
 //         stage("Download SonarScanner") {
 //             steps {
