@@ -147,21 +147,23 @@ pipeline {
         }
 
         stage("SonarQube Scan Backend") {
-            steps {
-                echo "Running SonarQube scan for backend..."
-                dir('app/backend') {
-                    sh '''
-                        ../../sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=backend \
-                        -Dsonar.projectName=backend \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST \
-                        -Dsonar.login=$SONAR_TOKEN
-                    '''
-                }
-            }
+    steps {
+        echo "Running SonarQube scan for backend..."
+        dir('app/backend') {
+            sh '''
+                export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+                export PATH=$JAVA_HOME/bin:$PATH
+                ../../sonar-scanner/bin/sonar-scanner \
+                  -Dsonar.projectKey=backend \
+                  -Dsonar.projectName=backend \
+                  -Dsonar.projectVersion=1.0 \
+                  -Dsonar.sources=. \
+                  -Dsonar.host.url=$SONAR_HOST \
+                  -Dsonar.login=$SONAR_TOKEN
+            '''
         }
+    }
+}
 
         stage("SonarQube Scan Frontend") {
             steps {
