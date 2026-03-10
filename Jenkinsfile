@@ -150,20 +150,18 @@ pipeline {
         stage("SonarQube Scan") {
     steps {
         echo "Running SonarQube scan..."
-        dir("${WORKSPACE}") {
-            withEnv(["JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
-                     "SONAR_HOST=${SONAR_HOST}",
-                     "SONAR_TOKEN=${SONAR_TOKEN}"]) {
-               sh '''
-/usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \
-/home/ubuntu/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
--Dsonar.projectKey=test \
--Dsonar.projectName="test" \
--Dsonar.projectVersion=1.0 \
--Dsonar.sources=app/backend,app/frontend \
--Dsonar.host.url=$SONAR_HOST \
--Dsonar.login=$SONAR_TOKEN
-'''
+        sh '''
+
+            /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \
+  ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
+  -Dsonar.projectKey=test \
+  -Dsonar.projectName="test" \
+  -Dsonar.projectVersion=1.0 \
+  -Dsonar.sources=app/backend,app/frontend \
+  -Dsonar.host.url=http://13.232.134.53:9000 \
+  -Dsonar.token=squ_02bf5374e4765ed64b20f73fa862d7af7d992903
+
+            '''
             }
         }
     }
