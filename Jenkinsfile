@@ -119,23 +119,16 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://13.232.134.53:9000'
         SONAR_TOKEN    = credentials('token')
-        SONAR_SCANNER  = '/root/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar'
+        SONAR_SCANNER  = '/var/lib/jenkins/workspace/project/sonar-scanner/lib/sonar-scanner-cli-4.8.0.2856.jar'
         JAVA_HOME      = '/usr/lib/jvm/java-17-openjdk-amd64'
     }
 
     stages {
 
-        stage("Cloning") {
-            steps {
-                echo "Cloning Repo..."
-                git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
-            }
-        }
-
         stage("SonarQube Analysis") {
             steps {
                 echo "Running SonarQube scan for backend + frontend..."
-                sh """
+                sh '''
                     ${JAVA_HOME}/bin/java -jar ${SONAR_SCANNER} \
                     -Dsonar.projectKey=test \
                     -Dsonar.projectName="test" \
@@ -143,18 +136,16 @@ pipeline {
                     -Dsonar.sources=app/backend,app/frontend \
                     -Dsonar.host.url=${SONAR_HOST_URL} \
                     -Dsonar.token=${SONAR_TOKEN}
-                """
+                '''
             }
         }
 
         stage("Build & Push Docker Images") {
             steps {
-                echo "Building and pushing backend image..."
                 dir('app/backend') {
                     sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/server:${BUILD_NUMBER}"
                 }
-                echo "Building and pushing frontend image..."
                 dir('app/frontend') {
                     sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/client:${BUILD_NUMBER}"
@@ -164,16 +155,13 @@ pipeline {
 
         stage("Trivy Scan") {
             steps {
-                echo "Scanning backend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
-                echo "Scanning frontend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
             }
         }
 
         stage("Deploy to Kubernetes") {
             steps {
-                echo "Deploying to Kubernetes..."
                 sh """
                     kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default
                     kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default
@@ -195,13 +183,12 @@ pipeline {
         failure {
             emailext(
                 subject: "❌ Pipeline FAILED - Build #${BUILD_NUMBER}",
-                body: "Build #${BUILD_NUMBER} FAILED. Check Jenkins logs for details.",
+                body: "Build #${BUILD_NUMBER} FAILED. Check Jenkins logs.",
                 to: "surajdwivedi644@gmail.com"
             )
         }
     }
 }
-
 // ==================================================================================================  Extended email jenkins
 
 
