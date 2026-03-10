@@ -136,12 +136,13 @@ pipeline {
                 echo "Running SonarQube scan for backend..."
                 dir('app/backend') {
                     sh """
-                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
-                      -Dsonar.projectKey=backend \
-                      -Dsonar.projectName=backend \
-                      -Dsonar.projectVersion=1.0 \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=${SONAR_HOST} \
+                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \\
+                      ${WORKSPACE}/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \\
+                      -Dsonar.projectKey=backend \\
+                      -Dsonar.projectName=backend \\
+                      -Dsonar.projectVersion=1.0 \\
+                      -Dsonar.sources=. \\
+                      -Dsonar.host.url=${SONAR_HOST} \\
                       -Dsonar.token=${SONAR_TOKEN}
                     """
                 }
@@ -153,12 +154,13 @@ pipeline {
                 echo "Running SonarQube scan for frontend..."
                 dir('app/frontend') {
                     sh """
-                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
-                      -Dsonar.projectKey=frontend \
-                      -Dsonar.projectName=frontend \
-                      -Dsonar.projectVersion=1.0 \
-                      -Dsonar.sources=. \
-                      -Dsonar.host.url=${SONAR_HOST} \
+                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \\
+                      ${WORKSPACE}/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \\
+                      -Dsonar.projectKey=frontend \\
+                      -Dsonar.projectName=frontend \\
+                      -Dsonar.projectVersion=1.0 \\
+                      -Dsonar.sources=. \\
+                      -Dsonar.host.url=${SONAR_HOST} \\
                       -Dsonar.token=${SONAR_TOKEN}
                     """
                 }
@@ -167,12 +169,13 @@ pipeline {
 
         stage("Build and Push Docker Images") {
             steps {
-                echo "Building and pushing backend image..."
+                echo "Building and pushing backend image"
                 dir('app/backend') {
                     sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/server:${BUILD_NUMBER}"
                 }
-                echo "Building and pushing frontend image..."
+
+                echo "Building and pushing frontend image"
                 dir('app/frontend') {
                     sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/client:${BUILD_NUMBER}"
@@ -184,6 +187,7 @@ pipeline {
             steps {
                 echo "Scanning backend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
+
                 echo "Scanning frontend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
             }
@@ -202,7 +206,6 @@ pipeline {
                 }
             }
         }
-
     }
 
     post {
@@ -213,6 +216,7 @@ pipeline {
                 to: "surajdwivedi644@gmail.com"
             )
         }
+
         failure {
             emailext(
                 subject: "Pipeline Failed",
