@@ -128,7 +128,7 @@ pipeline {
         stage("Use Sonar Credentials") {
     steps {
         withCredentials([
-            string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')
+            string(credentialsId: 'token', variable: 'SONAR_TOKEN')
         ]) {
             sh '''
             echo "Using Sonar Host: $SONAR_HOST"
