@@ -127,101 +127,103 @@ pipeline {
 
         stage("Cloning") {
             steps {
+                echo "${SONAR_TOKEN} "
+                echo "${SONAR_HOST} "
                 echo "Cloning Repo..."
                 git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
             }
         }
 
-        stage("Download SonarScanner") {
-            steps {
-                echo "Downloading SonarScanner..."
-                dir("${WORKSPACE}") {
-                    sh '''
-                    if [ ! -d sonar-scanner ]; then
-                        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
-                        unzip sonar-scanner-cli-4.8.0.2856-linux.zip
-                        mv sonar-scanner-4.8.0.2856-linux sonar-scanner
-                    fi
-                    '''
-                }
-            }
-        }
+//         stage("Download SonarScanner") {
+//             steps {
+//                 echo "Downloading SonarScanner..."
+//                 dir("${WORKSPACE}") {
+//                     sh '''
+//                     if [ ! -d sonar-scanner ]; then
+//                         wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+//                         unzip sonar-scanner-cli-4.8.0.2856-linux.zip
+//                         mv sonar-scanner-4.8.0.2856-linux sonar-scanner
+//                     fi
+//                     '''
+//                 }
+//             }
+//         }
 
-        stage("SonarQube Scan") {
-    steps {
-        echo "Running SonarQube scan..."
-        sh '''
+//         stage("SonarQube Scan") {
+//           steps {
+//         echo "Running SonarQube scan..."
+//         sh '''
 
-            /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \
-  ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
-  -Dsonar.projectKey=test \
-  -Dsonar.projectName="test" \
-  -Dsonar.projectVersion=1.0 \
-  -Dsonar.sources=app/backend,app/frontend \
-  -Dsonar.host.url=http://13.232.134.53:9000 \
-  -Dsonar.token=squ_02bf5374e4765ed64b20f73fa862d7af7d992903
-            '''
+//             /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \
+//   ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
+//   -Dsonar.projectKey=test \
+//   -Dsonar.projectName="test" \
+//   -Dsonar.projectVersion=1.0 \
+//   -Dsonar.sources=app/backend,app/frontend \
+//   -Dsonar.host.url=http://13.232.134.53:9000 \
+//   -Dsonar.token=squ_02bf5374e4765ed64b20f73fa862d7af7d992903
+//             '''
+//     }
+// }
+
+        // stage("Build and Push Docker Images") {
+        //     steps {
+        //         echo "Building backend image..."
+        //         dir('app/backend') {
+        //             sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+        //             sh "docker push suryasuraj/server:${BUILD_NUMBER}"
+        //         }
+
+        //         echo "Building frontend image..."
+        //         dir('app/frontend') {
+        //             sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
+        //             sh "docker push suryasuraj/client:${BUILD_NUMBER}"
+        //         }
+        //     }
+        // }
+
+        // stage("Trivy Scan") {
+        //     steps {
+        //         echo "Scanning backend image..."
+        //         sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
+
+        //         echo "Scanning frontend image..."
+        //         sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
+        //     }
+        // }
+
+        // stage("Deploy to Kubernetes") {
+        //     steps {
+        //         echo "Deploying backend and frontend to Kubernetes..."
+        //         dir('kubernetes') {
+        //             sh """
+        //             kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
+        //             kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default --record
+        //             kubectl rollout status deployment/backend-deployment -n default
+        //             kubectl rollout status deployment/frontend-deployment -n default
+        //             """
+        //         }
+        //     }
+        // }
+
     }
-}
 
-        stage("Build and Push Docker Images") {
-            steps {
-                echo "Building backend image..."
-                dir('app/backend') {
-                    sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
-                    sh "docker push suryasuraj/server:${BUILD_NUMBER}"
-                }
-
-                echo "Building frontend image..."
-                dir('app/frontend') {
-                    sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
-                    sh "docker push suryasuraj/client:${BUILD_NUMBER}"
-                }
-            }
-        }
-
-        stage("Trivy Scan") {
-            steps {
-                echo "Scanning backend image..."
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
-
-                echo "Scanning frontend image..."
-                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
-            }
-        }
-
-        stage("Deploy to Kubernetes") {
-            steps {
-                echo "Deploying backend and frontend to Kubernetes..."
-                dir('kubernetes') {
-                    sh """
-                    kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
-                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default --record
-                    kubectl rollout status deployment/backend-deployment -n default
-                    kubectl rollout status deployment/frontend-deployment -n default
-                    """
-                }
-            }
-        }
-
-    }
-
-    post {
-        success {
-            emailext(
-                subject: "Pipeline Success",
-                body: "Pipeline build SUCCESS",
-                to: "surajdwivedi644@gmail.com"
-            )
-        }
-        failure {
-            emailext(
-                subject: "Pipeline Failed",
-                body: "Pipeline build FAILED",
-                to: "surajdwivedi644@gmail.com"
-            )
-        }
-    }
+    // post {
+    //     success {
+    //         emailext(
+    //             subject: "Pipeline Success",
+    //             body: "Pipeline build SUCCESS",
+    //             to: "surajdwivedi644@gmail.com"
+    //         )
+    //     }
+    //     failure {
+    //         emailext(
+    //             subject: "Pipeline Failed",
+    //             body: "Pipeline build FAILED",
+    //             to: "surajdwivedi644@gmail.com"
+    //         )
+    //     }
+    // }
 }
 
 // ==================================================================================================  Extended email jenkins
