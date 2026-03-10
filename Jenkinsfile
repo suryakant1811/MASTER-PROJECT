@@ -154,7 +154,6 @@ pipeline {
             withEnv(["JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64",
                      "SONAR_HOST=${SONAR_HOST}",
                      "SONAR_TOKEN=${SONAR_TOKEN}"]) {
-                sh '''
                sh '''
 /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar \
 /home/ubuntu/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
@@ -165,7 +164,6 @@ pipeline {
 -Dsonar.host.url=$SONAR_HOST \
 -Dsonar.login=$SONAR_TOKEN
 '''
-                '''
             }
         }
     }
