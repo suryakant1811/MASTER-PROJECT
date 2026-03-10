@@ -118,17 +118,16 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST = credentials('host')    // SonarQube URL
-        SONAR_TOKEN = credentials('token')  // SonarQube token
-        JAVA_HOME = "/usr/lib/jvm/java-17-openjdk-amd64"
-        PATH = "${JAVA_HOME}/bin:${env.PATH}"
+        SONAR_HOST = credentials('host')   // SonarQube server URL
+        SONAR_TOKEN = credentials('token') // SonarQube token
+        JAVA_PATH = "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
     }
 
     stages {
 
-        stage("Cloning Repo") {
+        stage("Cloning") {
             steps {
-                echo "Cloning repository..."
+                echo "Cloning Repo..."
                 git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
             }
         }
@@ -136,47 +135,30 @@ pipeline {
         stage("Download SonarScanner") {
             steps {
                 echo "Downloading SonarScanner..."
-                sh '''
-                    if [ ! -d "$WORKSPACE/sonar-scanner" ]; then
+                dir("${WORKSPACE}") {
+                    sh '''
+                    if [ ! -d sonar-scanner ]; then
                         wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
                         unzip sonar-scanner-cli-4.8.0.2856-linux.zip
                         mv sonar-scanner-4.8.0.2856-linux sonar-scanner
                     fi
-                '''
+                    '''
+                }
             }
         }
 
-        stage("SonarQube Scan Backend") {
-    steps {
-        echo "Running SonarQube scan for backend..."
-        dir('app/backend') {
-            sh '''
-                export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-                export PATH=$JAVA_HOME/bin:$PATH
-                ../../sonar-scanner/bin/sonar-scanner \
-                  -Dsonar.projectKey=backend \
-                  -Dsonar.projectName=backend \
-                  -Dsonar.projectVersion=1.0 \
-                  -Dsonar.sources=. \
-                  -Dsonar.host.url=$SONAR_HOST \
-                  -Dsonar.login=$SONAR_TOKEN
-            '''
-        }
-    }
-}
-
-        stage("SonarQube Scan Frontend") {
+        stage("SonarQube Scan") {
             steps {
-                echo "Running SonarQube scan for frontend..."
-                dir('app/frontend') {
+                echo "Running SonarQube scan..."
+                dir("${WORKSPACE}") {
                     sh '''
-                        ../../sonar-scanner/bin/sonar-scanner \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.projectName=frontend \
-                        -Dsonar.projectVersion=1.0 \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=$SONAR_HOST \
-                        -Dsonar.login=$SONAR_TOKEN
+                    $JAVA_PATH -jar sonar-scanner/lib/sonar-scanner-cli-4.8.0.2856.jar \
+                      -Dsonar.projectKey=test \
+                      -Dsonar.projectName="test" \
+                      -Dsonar.projectVersion=1.0 \
+                      -Dsonar.sources=app/backend,app/frontend \
+                      -Dsonar.host.url=$SONAR_HOST \
+                      -Dsonar.login=$SONAR_TOKEN
                     '''
                 }
             }
@@ -184,13 +166,13 @@ pipeline {
 
         stage("Build and Push Docker Images") {
             steps {
-                echo "Building and pushing backend image..."
+                echo "Building backend image..."
                 dir('app/backend') {
                     sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/server:${BUILD_NUMBER}"
                 }
 
-                echo "Building and pushing frontend image..."
+                echo "Building frontend image..."
                 dir('app/frontend') {
                     sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
                     sh "docker push suryasuraj/client:${BUILD_NUMBER}"
@@ -202,7 +184,7 @@ pipeline {
             steps {
                 echo "Scanning backend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
-                
+
                 echo "Scanning frontend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
             }
@@ -213,14 +195,15 @@ pipeline {
                 echo "Deploying backend and frontend to Kubernetes..."
                 dir('kubernetes') {
                     sh """
-                        kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
-                        kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default --record
-                        kubectl rollout status deployment/backend-deployment -n default
-                        kubectl rollout status deployment/frontend-deployment -n default
+                    kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
+                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default --record
+                    kubectl rollout status deployment/backend-deployment -n default
+                    kubectl rollout status deployment/frontend-deployment -n default
                     """
                 }
             }
         }
+
     }
 
     post {
@@ -231,7 +214,6 @@ pipeline {
                 to: "surajdwivedi644@gmail.com"
             )
         }
-
         failure {
             emailext(
                 subject: "Pipeline Failed",
