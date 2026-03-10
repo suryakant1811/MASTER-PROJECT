@@ -127,10 +127,11 @@ pipeline {
 
         stage("Cloning") {
             steps {
+                echo "**************************************************************************************"
                 echo "${SONAR_TOKEN} "
                 echo "${SONAR_HOST} "
-                echo "Cloning Repo..."
-                git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
+                echo "**************************************************************************************"
+                // git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
             }
         }
 
