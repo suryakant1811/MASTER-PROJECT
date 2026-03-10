@@ -1,86 +1,201 @@
-pipeline{
+// pipeline{
 
+//     agent any 
+
+//     environment {
+//     SONAR_HOST = credentials('host')  
+//     SONAR_TOKEN = credentials('token')   
+// }
+
+//     stages{
+
+//         stage("Cloning"){
+//             steps{ 
+//                 echo "Cloning Repo..."
+//                 git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
+//                 }
+//         }
+
+//         stage("Testing backend using sonarqube"){
+//             steps{
+//                 echo "Running SonarQube scan for backend..."
+//                 dir('app/backend'){
+//                     sh ''' 
+//                         docker run --rm \
+//                         -e SONAR_HOST_URL="http://15.206.128.4:9000/" \
+//                         -e SONAR_LOGIN="${SONAR_TOKEN}" \
+//                         -v \$(pwd):/usr/src \
+//                         sonarsource/sonar-scanner-cli \
+//                         -Dsonar.projectKey=backend \
+//                         -Dsonar.sources=.
+//                     ''' 
+//                 }
+//             }
+//         }
+
+        
+
+//         stage("Testing frontend using sonarqube"){
+//             steps{
+//                 echo "Running SonarQube for frontend..."
+//                 dir('app/frontend'){
+//                     sh ''' 
+//                         docker run --rm \
+//                         -e SONAR_HOST_URL="http://15.206.128.4:9000/" \
+//                         -e SONAR_LOGIN="${SONAR_TOKEN}" \
+//                         -v \$(pwd):/usr/src \
+//                         sonarsource/sonar-scanner-cli \
+//                         -Dsonar.projectKey=frontend \
+//                         -Dsonar.sources=.
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage("Building and pushing Docker imgage"){
+//             steps{
+//                 echo "Building and pushing backend images"
+//                 dir('app/backend'){
+//                     sh " docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+//                     sh " docker push suryasuraj/server:${BUILD_NUMBER} "
+//                 }
+//                 echo "Building and pushing frontend images"
+//                 dir('app/frontend'){
+//                     sh " docker build -t suryasuraj/client:${BUILD_NUMBER} ."
+//                     sh " docker push suryasuraj/client:${BUILD_NUMBER} "
+//                 }
+//             }
+//         }
+
+//         stage("Trivy scan"){
+//             steps{
+//                 echo "scanning backend image..."
+//                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
+//                 echo "scanning frontend image..."
+//                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
+//             }
+//         }
+
+//          stage('Deploy to Kubernetes') {
+//             steps {
+//                 echo "Deploying backend and frontend to Kubernetes..."
+//                 dir('kubernetes') {
+//                     sh """
+//                     kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
+//                     kubectl set image deployment/frontend-deployment frontend=suryasuraj/frontend:${BUILD_NUMBER} -n default --record
+//                     kubectl rollout status deployment/backend-deployment -n default
+//                     kubectl rollout status deployment/frontend-deployment -n default
+//                     """
+//                 }
+//             }
+//         }
+
+//     }
+
+//    post {
+
+//         success {
+//             emailext(
+//                 subject: "Pipeline Success",
+//                 body: "Pipeline build SUCCESS",
+//                 to: "surajdwivedi644@gmail.com"
+//             )
+//         }
+
+//         failure {
+//             emailext(
+//                 subject: "Pipeline Failed",
+//                 body: "Pipeline build FAILED",
+//                 to: "surajdwivedi644@gmail.com"
+//             )
+//         }
+
+//     }
+// }
+
+
+pipeline {
     agent any 
 
     environment {
-    SONAR_HOST = credentials('sonar-host')  
-    SONAR_TOKEN = credentials('token')   
-}
+        SONAR_HOST = credentials('host')  
+        SONAR_TOKEN = credentials('token')   
+    }
 
-    stages{
+    stages {
 
-        stage("Cloning"){
-            steps{ 
+        stage("Cloning") {
+            steps { 
                 echo "Cloning Repo..."
                 git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
-                }
+            }
         }
 
-        stage("Testing backend using sonarqube"){
-            steps{
+        stage("SonarQube Scan Backend") {
+            steps {
                 echo "Running SonarQube scan for backend..."
-                dir('app/backend'){
-                    sh ''' 
-                        docker run --rm \
-                        -e SONAR_HOST_URL="http://15.206.128.4:9000/" \
-                        -e SONAR_LOGIN="${SONAR_TOKEN}" \
-                        -v \$(pwd):/usr/src \
-                        sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=backend \
-                        -Dsonar.sources=.
-                    ''' 
+                dir('app/backend') {
+                    sh """
+                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
+                      -Dsonar.projectKey=backend \
+                      -Dsonar.projectName=backend \
+                      -Dsonar.projectVersion=1.0 \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_HOST} \
+                      -Dsonar.token=${SONAR_TOKEN}
+                    """
                 }
             }
         }
 
-        stage("Testing frontend using sonarqube"){
-            steps{
-                echo "Running SonarQube for frontend..."
-                dir('app/frontend'){
-                    sh ''' 
-                        docker run --rm \
-                        -e SONAR_HOST_URL="http://15.206.128.4:9000/" \
-                        -e SONAR_LOGIN="${SONAR_TOKEN}" \
-                        -v \$(pwd):/usr/src \
-                        sonarsource/sonar-scanner-cli \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.sources=.
-                    '''
+        stage("SonarQube Scan Frontend") {
+            steps {
+                echo "Running SonarQube scan for frontend..."
+                dir('app/frontend') {
+                    sh """
+                    /usr/lib/jvm/java-17-openjdk-amd64/bin/java -jar ~/MASTER-PROJECT/sonar-scanner-4.8.0.2856-linux/lib/sonar-scanner-cli-4.8.0.2856.jar \
+                      -Dsonar.projectKey=frontend \
+                      -Dsonar.projectName=frontend \
+                      -Dsonar.projectVersion=1.0 \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_HOST} \
+                      -Dsonar.token=${SONAR_TOKEN}
+                    """
                 }
             }
         }
 
-        stage("Building and pushing Docker imgage"){
-            steps{
-                echo "Building and pushing backend images"
-                dir('app/backend'){
-                    sh " docker build -t suryasuraj/server:${BUILD_NUMBER} ."
-                    sh " docker push suryasuraj/server:${BUILD_NUMBER} "
+        stage("Build and Push Docker Images") {
+            steps {
+                echo "Building and pushing backend image..."
+                dir('app/backend') {
+                    sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+                    sh "docker push suryasuraj/server:${BUILD_NUMBER}"
                 }
-                echo "Building and pushing frontend images"
-                dir('app/frontend'){
-                    sh " docker build -t suryasuraj/client:${BUILD_NUMBER} ."
-                    sh " docker push suryasuraj/client:${BUILD_NUMBER} "
+                echo "Building and pushing frontend image..."
+                dir('app/frontend') {
+                    sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
+                    sh "docker push suryasuraj/client:${BUILD_NUMBER}"
                 }
             }
         }
 
-        stage("Trivy scan"){
-            steps{
-                echo "scanning backend image..."
+        stage("Trivy Scan") {
+            steps {
+                echo "Scanning backend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
-                echo "scanning frontend image..."
+                echo "Scanning frontend image..."
                 sh "trivy image --exit-code 1 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
             }
         }
 
-         stage('Deploy to Kubernetes') {
+        stage("Deploy to Kubernetes") {
             steps {
                 echo "Deploying backend and frontend to Kubernetes..."
                 dir('kubernetes') {
                     sh """
                     kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default --record
-                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/frontend:${BUILD_NUMBER} -n default --record
+                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default --record
                     kubectl rollout status deployment/backend-deployment -n default
                     kubectl rollout status deployment/frontend-deployment -n default
                     """
@@ -90,8 +205,7 @@ pipeline{
 
     }
 
-   post {
-
+    post {
         success {
             emailext(
                 subject: "Pipeline Success",
@@ -99,7 +213,6 @@ pipeline{
                 to: "surajdwivedi644@gmail.com"
             )
         }
-
         failure {
             emailext(
                 subject: "Pipeline Failed",
@@ -107,9 +220,9 @@ pipeline{
                 to: "surajdwivedi644@gmail.com"
             )
         }
-
     }
 }
+
 // ==================================================================================================  Extended email jenkins
 
 
@@ -151,7 +264,10 @@ pipeline{
 // install scanner inside ci using url of instance and token to run the scaaner 
 
 // docker run --rm \
-//   -e SONAR_HOST_URL="http://13.235.79.139:9000" \
-//   -e SONAR_LOGIN="squ_d9f03b7451f13fff9b4449732ec12b1121b1e357" \
+//   -e SONAR_HOST_URL="http://13.232.134.53:9000/" \
+//   -e SONAR_LOGIN="sqp_ff3553c43af5e5a85c693eb827bd8617e66b9bc2" \
 //   -v $(pwd):/usr/src \
 //   sonarsource/sonar-scanner-cli
+
+
+//sonar qube needed to implemet 
