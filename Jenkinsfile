@@ -141,24 +141,25 @@ pipeline {
         }
 
         stage("Build & Push Docker Images") {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'dockerhub-cred',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub_cred',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+
+                    dir('app/backend') {
+                        sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+                        sh "docker push suryasuraj/server:${BUILD_NUMBER}"
+                    }
+                    dir('app/frontend') {
+                        sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
+                        sh "docker push suryasuraj/client:${BUILD_NUMBER}"
+                    }
+                }
+            }
         }
-        dir('app/backend') {
-            sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
-            sh "docker push suryasuraj/server:${BUILD_NUMBER}"
-        }
-        dir('app/frontend') {
-            sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
-            sh "docker push suryasuraj/client:${BUILD_NUMBER}"
-        }
-    }
-}
 
         stage("Trivy Scan") {
             steps {
@@ -196,6 +197,7 @@ pipeline {
         }
     }
 }
+
 // ==================================================================================================  Extended email jenkins
 
 
