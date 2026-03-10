@@ -160,10 +160,7 @@ pipeline {
   -Dsonar.sources=app/backend,app/frontend \
   -Dsonar.host.url=http://13.232.134.53:9000 \
   -Dsonar.token=squ_02bf5374e4765ed64b20f73fa862d7af7d992903
-
             '''
-            }
-        }
     }
 }
 
