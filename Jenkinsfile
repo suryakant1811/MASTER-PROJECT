@@ -132,26 +132,6 @@ pipeline {
 
 // ==================================================================================================== sonarqube
 
-//  Pull latest LTS (Long-Term Support) version
-// docker pull sonarqube:9.9-community
-
-//  Run SonarQube
-// docker run -d --name sonarqube \
-//   -p 9000:9000 \
-//   -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
-//   sonarqube:9.9-community
-
-// install scanner inside ci using url of instance and token to run the scaaner 
-
-// docker run --rm \
-//   -e SONAR_HOST_URL="http://13.235.79.139:9000" \
-//   -e SONAR_LOGIN="squ_d9f03b7451f13fff9b4449732ec12b1121b1e357" \
-//   -v $(pwd):/usr/src \
-//   sonarsource/sonar-scanner-cli
-
-
-//sonar qube needed to implemet 
-
 // sudo apt update
 // sudo apt install openjdk-17-jdk -y
 // sudo apt install unzip wget -y

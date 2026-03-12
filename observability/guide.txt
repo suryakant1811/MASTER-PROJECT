@@ -1,6 +1,5 @@
                                                     OBSERVABILTY 
 
-
 What is happening? → Metrics
 
 Why is it happening? → Logs
