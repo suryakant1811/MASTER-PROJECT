@@ -13,15 +13,21 @@ const requestCounter = new client.Counter({
   name: "http_requests_total",
   help: "Total HTTP Requests"
 })
-app.get("/", (req,res)=>{
+
+app.use((req, res, next) => {
   requestCounter.inc()
-  res.send("Hello DevOps")
+  next()
 })
+
 app.get("/metrics", async (req,res)=>{
   res.set("Content-Type", client.register.contentType)
   res.end(await client.register.metrics())
 })
 // ================================     observability       =========================
+
+app.get("/", (req,res)=>{
+  res.send("Hello DevOps")
+})
 
 app.use(
   cors({
