@@ -1,0 +1,162 @@
+======================================================== PHASE 1 - Prepare Kubernetes Cluster ===============================================
+
+First verify cluster health.
+
+kubectl get nodes
+kubectl get pods -A
+
+You should see your:
+
+frontend pods
+backend pods
+
+==================================================== Phase 2 — Install Helm ====================================================
+
+Most production clusters deploy observability with Helm.
+
+Install Helm:
+
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+helm version
+
+============================================ Phase 3 — Add Monitoring Helm Repositories ===================================
+
+Add the official repositories.
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+
+helm repo update
+
+
+=============================================== Phase 4 — Install Full Monitoring Stack ======================================
+
+Install the kube-prometheus-stack.
+
+This includes: Prometheus Grafana Alertmanager node-exporter kube-state-metrics
+
+helm install monitoring prometheus-community/kube-prometheus-stack \
+--namespace monitoring \
+--create-namespace
+
+Verify pods:
+
+kubectl get pods -n monitoring
+prometheus-server
+grafana
+alertmanager
+node-exporter
+kube-state-metrics
+
+Now cluster metrics are being collected.
+
+==================================================== Phase 5 — Access Grafana ===============================================
+
+Forward Grafana service.
+
+kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring
+
+Open: http://<EC2_public-ip>:3000
+
+Login cresentials:
+username: admin
+password: prom-operator
+
+You will already see dashboards
+These dashboards use metrics from Prometheus.
+
+=============================================== Phase 6 — Add Backend Application Metrics ===================================
+
+Now we instrument your Node backend.
+Install metrics library: npm install prom-client
+Example backend code:
+
+const client = require("prom-client")
+client.collectDefaultMetrics()
+const requestCounter = new client.Counter({
+  name: "http_requests_total",
+  help: "Total HTTP Requests"
+})
+app.get("/", (req,res)=>{
+  requestCounter.inc()
+  res.send("Hello DevOps")
+})
+app.get("/metrics", async (req,res)=>{
+  res.set("Content-Type", client.register.contentType)
+  res.end(await client.register.metrics())
+})
+
+http://backend-service:5000/metrics to access the data from matrix repo 
+
+
+============================================ Phase 7 — Tell Prometheus to Scrape Backend Metrics =====================
+
+Create file: backend-monitor.yaml
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  namespaceSelector:
+    matchNames:
+    - default
+  endpoints:
+  - port: http
+    path: /metrics
+
+kubectl apply -f backend-monitor.yaml Now Prometheus automatically collects backend metrics.
+
+========================================== Phase 8 — Install Logging System =================================================
+
+helm install loki grafana/loki-stack \
+--namespace monitoring
+
+This installs:
+Loki
+Promtail
+Grafana datasource
+
+Promtail collects logs from: /var/log/containers
+
+Logs now flow like this:   Pods → Promtail → Loki → Grafana
+
+
+================================================= Phase 9 — View Logs in Grafana =============================================
+
+Open Grafana → Explor → Select data source: Loki
+
+Example query: {namespace="default"}
+To see backend errors: {app="backend"} |= "error"
+
+================================================ Phase 10 — Create Alerts ===============================================
+
+Create alert rule file: high-cpu-alert.yaml 
+
+groups:
+- name: cpu-alert
+  rules:
+  - alert: HighCPUUsage
+    expr: sum(rate(container_cpu_usage_seconds_total[5m])) > 0.8
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      description: CPU usage above 80%
+
+
+Prometheus sends alerts to: Alertmanager
+
+===============================================================================================================================
+
+In your README include:
+Observability Stack
+Metrics → Prometheus
+Dashboards → Grafana
+Logs → Loki
+Alerts → Alertmanager
