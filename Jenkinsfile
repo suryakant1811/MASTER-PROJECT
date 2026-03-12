@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://13.232.134.53:9000'
+        SONAR_HOST_URL = 'http://15.207.254.14:9000'
         SONAR_TOKEN    = credentials('token')
         SONAR_SCANNER  = '/var/lib/jenkins/workspace/project/sonar-scanner/lib/sonar-scanner-cli-4.8.0.2856.jar'
         JAVA_HOME      = '/usr/lib/jvm/java-17-openjdk-amd64'
