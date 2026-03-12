@@ -30,52 +30,60 @@ pipeline {
             }
         }
 
-        
-
-        stage("Build & Push Docker Images") {
+        stage("Build Docker Images") {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub_cred',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                dir('app/backend') {
+                    sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
+                }
 
-                    dir('app/backend') {
-                        sh "docker build -t suryasuraj/server:${BUILD_NUMBER} ."
-                        sh "docker push suryasuraj/server:${BUILD_NUMBER}"
-                    }
-                    dir('app/frontend') {
-                        sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
-                        sh "docker push suryasuraj/client:${BUILD_NUMBER}"
-                    }
+                dir('app/frontend') {
+                    sh "docker build -t suryasuraj/client:${BUILD_NUMBER} ."
                 }
             }
         }
 
         stage("Trivy Scan") {
             steps {
-                sh "trivy image --exit-code 0 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}"
-                sh "trivy image --exit-code 0 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}"
+                sh '''
+                trivy image --exit-code 0 --severity HIGH,CRITICAL suryasuraj/server:${BUILD_NUMBER}
+                trivy image --exit-code 0 --severity HIGH,CRITICAL suryasuraj/client:${BUILD_NUMBER}
+                '''
             }
         }
 
-    // --exit-code 0 -> info but not stop not showing error
-    // --exit-code 1 -> info and stop shaowinf error 
+        stage("Push Images to DockerHub") {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub_cred',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+                    docker push suryasuraj/server:${BUILD_NUMBER}
+                    docker push suryasuraj/client:${BUILD_NUMBER}
+                    '''
+                }
+            }
+        }
 
         stage("Deploy to Kubernetes") {
             steps {
-                sh """
-                    kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default
-                    kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default
-                    kubectl rollout status deployment/backend-deployment -n default
-                    kubectl rollout status deployment/frontend-deployment -n default
-                """
+                sh '''
+                kubectl set image deployment/backend-deployment backend=suryasuraj/server:${BUILD_NUMBER} -n default
+                kubectl set image deployment/frontend-deployment frontend=suryasuraj/client:${BUILD_NUMBER} -n default
+
+                kubectl rollout status deployment/backend-deployment -n default
+                kubectl rollout status deployment/frontend-deployment -n default
+                '''
             }
         }
     }
 
     post {
+
         success {
             emailext(
                 subject: "✅ Pipeline SUCCESS - Build #${BUILD_NUMBER}",
@@ -83,6 +91,7 @@ pipeline {
                 to: "surajdwivedi644@gmail.com"
             )
         }
+
         failure {
             emailext(
                 subject: "❌ Pipeline FAILED - Build #${BUILD_NUMBER}",
@@ -90,6 +99,7 @@ pipeline {
                 to: "surajdwivedi644@gmail.com"
             )
         }
+
     }
 }
 
@@ -142,20 +152,20 @@ pipeline {
 
 //sonar qube needed to implemet 
 
-sudo apt update
-sudo apt install openjdk-17-jdk -y
-sudo apt install unzip wget -y
-cd /opt
-sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip
-sudo unzip sonarqube-10.3.0.82913.zip
-sudo mv sonarqube-10.3.0.82913 sonarqube
-ls /opt ->  sonarqube
+// sudo apt update
+// sudo apt install openjdk-17-jdk -y
+// sudo apt install unzip wget -y
+// cd /opt
+// sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip
+// sudo unzip sonarqube-10.3.0.82913.zip
+// sudo mv sonarqube-10.3.0.82913 sonarqube
+// ls /opt ->  sonarqube
 
-cd /opt
-sudo wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-sudo unzip sonar-scanner-cli-5.0.1.3006-linux.zip
-sudo mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+// cd /opt
+// sudo wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+// sudo unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+// sudo mv sonar-scanner-5.0.1.3006-linux sonar-scanner
 
-echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
-source ~/.bashrc
-sonar-scanner --version
+// echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
+// source ~/.bashrc
+// sonar-scanner --version
