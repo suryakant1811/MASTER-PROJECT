@@ -60,13 +60,15 @@ Now cluster metrics are being collected.
 
 Forward Grafana service.
 
-kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring
+kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring --address 0.0.0.0
 
 Open: http://<EC2_public-ip>:3000
 
 Login cresentials:
 username: admin
-password: prom-operator
+password give below command : 
+kubectl -n monitoring get secret monitoring-grafana \
+-o jsonpath="{.data.admin-password}" | base64 -d ; echo
 
 You will already see dashboards
 These dashboards use metrics from Prometheus.
