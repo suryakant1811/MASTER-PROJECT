@@ -5,26 +5,32 @@ pipeline {
     environment {
         SONAR_HOST_URL = 'http://15.207.254.14:9000'
         SONAR_TOKEN    = credentials('token')
-        SONAR_SCANNER  = '/var/lib/jenkins/workspace/project/sonar-scanner/lib/sonar-scanner-cli-4.8.0.2856.jar'
-        JAVA_HOME      = '/usr/lib/jvm/java-17-openjdk-amd64'
     }
 
     stages {
 
+        stage("Checkout Code") {
+            steps {
+                git branch: 'main', url: 'https://github.com/suryakant1811/MASTER-PROJECT.git'
+            }
+        }
+
         stage("SonarQube Analysis") {
             steps {
-                echo "Running SonarQube scan for backend + frontend..."
+                echo "Running SonarQube Scan..."
                 sh '''
-                    ${JAVA_HOME}/bin/java -jar ${SONAR_SCANNER} \
-                    -Dsonar.projectKey=test \
-                    -Dsonar.projectName="test" \
-                    -Dsonar.projectVersion=1.0 \
-                    -Dsonar.sources=app/backend,app/frontend \
-                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                    -Dsonar.token=${SONAR_TOKEN}
+                sonar-scanner \
+                -Dsonar.projectKey=test \
+                -Dsonar.projectName=test \
+                -Dsonar.projectVersion=1.0 \
+                -Dsonar.sources=app/backend,app/frontend \
+                -Dsonar.host.url=$SONAR_HOST_URL \
+                -Dsonar.token=$SONAR_TOKEN
                 '''
             }
         }
+
+        
 
         stage("Build & Push Docker Images") {
             steps {
@@ -135,3 +141,21 @@ pipeline {
 
 
 //sonar qube needed to implemet 
+
+sudo apt update
+sudo apt install openjdk-17-jdk -y
+sudo apt install unzip wget -y
+cd /opt
+sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip
+sudo unzip sonarqube-10.3.0.82913.zip
+sudo mv sonarqube-10.3.0.82913 sonarqube
+ls /opt ->  sonarqube
+
+cd /opt
+sudo wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+sudo unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+sudo mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+
+echo 'export PATH=$PATH:/opt/sonar-scanner/bin' >> ~/.bashrc
+source ~/.bashrc
+sonar-scanner --version
