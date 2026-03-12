@@ -1,3 +1,12 @@
+                                                    OBSERVABILTY 
+
+
+What is happening? → Metrics
+
+Why is it happening? → Logs
+
+Where is it happening? → Traces
+
 ======================================================== PHASE 1 - Prepare Kubernetes Cluster ===============================================
 
 First verify cluster health.
@@ -14,9 +23,7 @@ backend pods
 
 Most production clusters deploy observability with Helm.
 
-Install Helm:
-
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+Install Helm: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 helm version
 
@@ -28,7 +35,6 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo add grafana https://grafana.github.io/helm-charts
 
 helm repo update
-
 
 =============================================== Phase 4 — Install Full Monitoring Stack ======================================
 
@@ -160,3 +166,6 @@ Metrics → Prometheus
 Dashboards → Grafana
 Logs → Loki
 Alerts → Alertmanager
+
+
+
