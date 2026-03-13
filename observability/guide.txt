@@ -56,15 +56,16 @@ kube-state-metrics
 
 Now cluster metrics are being collected.
 
-==================================================== Phase 5 — Access Grafana ===============================================
+==================================================== Phase 5 — Access Grafana Prometheus ===============================================
 
 Forward Grafana service.
 
 kubectl port-forward svc/monitoring-grafana 3000:80 -n monitoring --address 0.0.0.0
+kubectl port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090 -n monitoring --address 0.0.0.0
 
-Open: http://<EC2_public-ip>:3000
+Open: http://<EC2_public-ip>:3000/9090 
 
-Login cresentials:
+Login cresentials grafana (Prometheus no needed):
 username: admin
 password give below command : 
 kubectl -n monitoring get secret monitoring-grafana \

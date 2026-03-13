@@ -11,7 +11,8 @@ import client from "prom-client";
 client.collectDefaultMetrics()
 const requestCounter = new client.Counter({
   name: "http_requests_total",
-  help: "Total HTTP Requests"
+  help: "Total HTTP Requests",
+  labelNames: ['method', 'path', 'status_code']
 })
 
 app.use((req, res, next) => {
