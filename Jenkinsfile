@@ -3,7 +3,7 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://15.207.254.14:9000'
+        SONAR_HOST_URL = 'http://65.0.99.17:9000'
         SONAR_TOKEN    = credentials('token')
     }
 
@@ -139,6 +139,12 @@ pipeline {
 // sudo wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip
 // sudo unzip sonarqube-10.3.0.82913.zip
 // sudo mv sonarqube-10.3.0.82913 sonarqube
+// to start first create a new user for sonarqube to run 
+// sudo adduser  sonaradmin
+// sudo chown -R sonaradmin:sonaradmin /opt/sonarqube
+// sudo su - sonaradmin
+// cd /opt/sonarqube/bin/linux-x86-64
+// sudo ./sonar.sh start
 // ls /opt ->  sonarqube
 
 // cd /opt

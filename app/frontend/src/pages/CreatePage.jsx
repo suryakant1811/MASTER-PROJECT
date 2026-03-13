@@ -64,7 +64,7 @@ const CreatePage = () => {
           />
 
           <Button colorScheme='blue' onClick={handleAddProduct} w='full'>
-            Add Product
+            Add Product now
           </Button>
 
 
