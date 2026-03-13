@@ -95,7 +95,7 @@ app.get("/metrics", async (req,res)=>{
   res.end(await client.register.metrics())
 })
 
-http://backend-service:5000/metrics to access the data from matrix repo 
+http://backend-service:5000/metrics to access the data from matrix repo  not work until below is yml  applyed correctly
 
 
 ============================================ Phase 7 — Tell Prometheus to Scrape Backend Metrics =====================
@@ -105,20 +105,79 @@ Create file: backend-monitor.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: backend-monitor
+  name: backend-service-monitor
   namespace: monitoring
+  labels:
+    app: backend-service-monitor
+    release: monitoring
+
 spec:
+  jobLabel: backend
   selector:
     matchLabels:
       app: backend
+
   namespaceSelector:
     matchNames:
-    - default
+      - default
+
   endpoints:
-  - port: http
-    path: /metrics
+    - port: http
+      path: /metrics
+      interval: 15s
 
 kubectl apply -f backend-monitor.yaml Now Prometheus automatically collects backend metrics.
+
+=================================alert system config things
+
+app password of google needed to be stored in form of secret in k8s it took my testing app pasword andn stored it in 
+
+kubectl create secret generic mail-pass \
+--from-literal=gmail-pass="fpip caxp msou udgw" \
+-n monitoring
+
+file you need to create and apply 
+
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: backend-alert-config
+  namespace: monitoring
+  labels:
+    release: monitoring
+
+spec:
+  route:
+    receiver: "null"
+    repeatInterval: 30m
+    routes:
+      - matchers:
+          - name: alertname
+            value: HighCpuUsage
+        receiver: "send-email"
+
+      - matchers:
+          - name: alertname
+            value: PodRestart
+        receiver: "send-email"
+        repeatInterval: 5m
+
+  receivers:
+    - name: "send-email"
+      emailConfigs:
+        - to: dummy181103@gmail.com
+          from: dummy181103@gmail.com
+          smarthost: smtp.gmail.com:587
+          authUsername: dummy181103@gmail.com
+          authIdentity: dummy181103@gmail.com
+          sendResolved: false
+          authPassword:
+            name: mail-pass
+            key: gmail-pass
+
+    - name: "null"
+
+
 
 ========================================== Phase 8 — Install Logging System =================================================
 
