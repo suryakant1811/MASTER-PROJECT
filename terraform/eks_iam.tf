@@ -27,4 +27,4 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 
 }
 
-# eks to create we want to have a role and the policy as AmazonEKSClusterPolicy
+# for eks to create we want to have a role and the policy as AmazonEKSClusterPolicy

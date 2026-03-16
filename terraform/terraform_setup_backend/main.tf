@@ -1,17 +1,12 @@
 resource "aws_s3_bucket" "s3_bucket" {
-    bucket = "surya_s3_bucket_backend_MASTER_APP"
+    bucket = "surya-s3-bucket-backend-master-app"
 }
 
 resource "aws_s3_bucket_versioning" "s3_versioning" {
     bucket = aws_s3_bucket.s3_bucket.id
     versioning_configuration {
-    status = "Enable"
+    status = "Enabled"
   }
-}
-
-resource "aws_s3_bucket_acl" "s3_acl" {
-    bucket = aws_s3_bucket.s3_bucket.id
-    acl = "private"
 }
 
 resource "aws_dynamodb_table" "dynodb" {
@@ -22,15 +17,5 @@ resource "aws_dynamodb_table" "dynodb" {
     attribute {
     name = "LockID"
     type = "S"
-  }
-
-}
-
-terraform {
-  backend "s3" {
-    bucket = "surya_s3_bucket_backend_MASTER_APP"
-    key = "prod/terraform.tfstate"
-    region = "us-east-1"
-    dynamodb_table = "terraform-local-table"
   }
 }
