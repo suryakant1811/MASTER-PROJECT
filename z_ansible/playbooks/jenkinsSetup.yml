@@ -1,0 +1,28 @@
+- name: install jenkins
+  hosts: public
+  become: true
+
+  tasks:
+    - name: install java-17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: add jenkins key
+      shell: wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
+
+    - name: add jenkins repo
+      shell: echo "deb https://pkg.jenkins.io/debian binary/" > /etc/apt/sources.list.d/jenkins.list
+
+    - name: install jenkins
+      apt:
+        name: jenkins
+        state: present
+        update_cache: yes
+
+    - name: start jenkins
+      service:
+        name: jenkins
+        state: started
+        enabled: yes

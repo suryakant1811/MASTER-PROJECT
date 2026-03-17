@@ -1,0 +1,35 @@
+- name: docker setup
+  hosts: public
+  become: true
+
+  vars:
+    user: ubuntu
+
+  tasks:
+
+  - name: update server
+    apt:
+      update_cache: yes
+
+  - name: docker install
+    apt:
+      name:
+        docker.io
+      state: present
+
+  - name: docker enable
+    service:
+      name: docker
+      state: started
+      enabled: yes
+  
+  - name: adding current user to docker group
+    user: 
+      name: "{{user}}"
+      groups: docker
+      append: yes
+
+  - name: restarting docker
+    service:
+      name: docker
+      state: restarted

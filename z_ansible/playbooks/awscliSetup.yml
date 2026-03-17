@@ -1,0 +1,25 @@
+- name: installing awscli
+  hosts: public
+  become: true
+
+  tasks:
+    - name: download awscli
+      get_url:
+        url:  https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+    
+    - name: install unzip package
+      apt:
+        name : unzip
+        state: present
+    
+    - name: unzip download
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: install awscli
+      command: /tmp/aws/install
+
+

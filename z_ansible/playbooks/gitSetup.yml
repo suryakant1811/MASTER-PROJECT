@@ -1,0 +1,15 @@
+- name: Setup server 
+  hosts: public
+  become: true
+
+  tasks:
+
+    - name: update server
+      apt:
+        update_cache: yes
+    
+    - name: git install
+      apt:
+        name: git
+        state: present
+

@@ -1,0 +1,32 @@
+to connect with private subnet
+
+✅ 1. Add key to SSH agent
+eval "$(ssh-agent -s)"
+ssh-add ./terra_key_east_1.pem
+✅ 2. SSH config (one-time setup)
+nano ~/.ssh/config
+Paste:
+Host bastion
+  HostName 3.227.9.76
+  User ubuntu
+  IdentityFile ~/path/to/terra_key_east_1.pem
+  ForwardAgent yes
+
+Host private
+  HostName 10.0.3.62
+  User ubuntu
+  ProxyJump bastion
+  ForwardAgent yes
+✅ 3. Connect to private (FINAL CMD)
+ssh private
+✅ 4. Ansible command
+ansible -i hosts.ini private -m ping
+✅ 5. Minimal hosts.ini
+[private]
+pvt_server ansible_host=private
+
+ansible -i hosts.ini private -m ping
+
+after kubectl file run 
+aws eks update-kubeconfig --region us-east-1 --name prod-cluster
+
