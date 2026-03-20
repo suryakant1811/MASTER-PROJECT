@@ -30,8 +30,8 @@ console.log( products);
     <VStack spacing={8}>
 
    <Text fontSize={30}  fontWeight={"bold"}  textAlign={"Center"}  >
-      Current Products are......
-      <p>value</p>
+      Current Products are...... {value}
+      
    </Text>
 
 
