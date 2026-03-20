@@ -15,7 +15,7 @@ pipeline {
             }
         }
 
-        stage("SonarQube Analysis") {
+        stage("SonarQube Analysis for project") {
             steps {
                 echo "Running SonarQube Scan..."
                 sh '''
