@@ -1,17 +1,28 @@
 import { Container, VStack, Text,  SimpleGrid} from '@chakra-ui/react'
-import  { useEffect } from 'react'
+import  { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useProductStore } from '../store/product'
 import ProductCard from '../components/ui/ProductCard'
-
+import axios from "axios"
 const HomePage = () => {
 
   const {fetchProducts, products} = useProductStore()
-
+  const [value, setValue] = useState()
   useEffect( () => {
     fetchProducts()
   }, [fetchProducts] );
 console.log( products);
+
+  const getNumberOfItem = async(req, res) => {
+    try {
+      const data = await axios.get("/api/products/count")
+      setValue(data)
+    } catch (error) {
+      return res.console.log(error)
+    }
+  }
+
+  useEffect( () => {getNumberOfItem()},[])
 
   return (
     <Container maxW={'container.xl'} py={12}>
@@ -20,6 +31,7 @@ console.log( products);
 
    <Text fontSize={30}  fontWeight={"bold"}  textAlign={"Center"}  >
       Current Products are......
+      <p>value</p>
    </Text>
 
 

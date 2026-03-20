@@ -62,5 +62,14 @@ export const updateProducts = async (req, res) => {
     }
 };
 
+export const totalProduct = async (req, res) => {
+    try {
+        const totalProduct = await Product.find().count()
+        return res.status(200).json({success:true, data: totalProduct})
+    } catch (error) {
+        return res.status(500).json({success:false, message: "Server error"})
+    }
+}
+
 
 //product.controller.js
