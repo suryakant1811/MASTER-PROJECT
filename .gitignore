@@ -1,11 +1,22 @@
+# ── Keys & Secrets ────────────────────────────────────────────────────────────
+*.pem
+*.key
+*.env
+.env*
 
-# Terraform
-
+# ── Terraform ─────────────────────────────────────────────────────────────────
 **/.terraform/
-
 *.tfstate
-
 *.tfstate.backup
-
+*.tfplan
 .terraform.lock.hcl
 
+# ── Ansible ───────────────────────────────────────────────────────────────────
+*.retry
+z_ansible/inventory/hosts.ini
+
+# ── OS & Editor ───────────────────────────────────────────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
