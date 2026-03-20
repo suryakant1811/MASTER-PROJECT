@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: suryasuraj/server
+          image: suryasuraj/server:44
           imagePullPolicy: Always
 
           ports:
