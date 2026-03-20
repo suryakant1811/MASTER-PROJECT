@@ -1,28 +1,55 @@
-- name: install jenkins
-  hosts: public
+- name: Install Jenkins
+  hosts: sonar_server
   become: true
 
   tasks:
-    - name: install java-17
-      apt:
+
+    - name: Install Java 17
+      ansible.builtin.apt:
         name: openjdk-17-jdk
         state: present
         update_cache: yes
 
-    - name: add jenkins key
-      shell: wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
+    - name: Fetch Jenkins GPG key from keyserver
+      ansible.builtin.shell: |
+        gpg --keyserver keyserver.ubuntu.com --recv-keys 7198F4B714ABFC68
+        gpg --export 7198F4B714ABFC68 > /usr/share/keyrings/jenkins-keyring.gpg
+        chmod 644 /usr/share/keyrings/jenkins-keyring.gpg
+      args:
+        creates: /usr/share/keyrings/jenkins-keyring.gpg
 
-    - name: add jenkins repo
-      shell: echo "deb https://pkg.jenkins.io/debian binary/" > /etc/apt/sources.list.d/jenkins.list
+    - name: Add Jenkins repo
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/jenkins.list
+        content: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/\n"
 
-    - name: install jenkins
-      apt:
-        name: jenkins
-        state: present
+    - name: Update apt cache
+      ansible.builtin.apt:
         update_cache: yes
 
-    - name: start jenkins
-      service:
+    - name: Install Jenkins
+      ansible.builtin.apt:
+        name: jenkins
+        state: present
+
+    - name: Start and enable Jenkins
+      ansible.builtin.systemd:
         name: jenkins
         state: started
-        enabled: yes
+        enabled: true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

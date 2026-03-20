@@ -1,5 +1,5 @@
 - name: installing awscli
-  hosts: public
+  hosts: sonar_server
   become: true
 
   tasks:

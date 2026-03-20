@@ -1,5 +1,5 @@
 - name: inatalling kubectl
-  hosts: public
+  hosts: sonar_server
   become: true
 
   tasks:

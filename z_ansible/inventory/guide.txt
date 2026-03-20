@@ -27,6 +27,8 @@ pvt_server ansible_host=private
 
 ansible -i hosts.ini private -m ping
 
+after awscli file config it 
+
 after kubectl file run 
 aws eks update-kubeconfig --region us-east-1 --name prod-cluster
 

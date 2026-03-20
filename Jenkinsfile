@@ -3,8 +3,8 @@ pipeline {
     agent any
 
     environment {
-        SONAR_HOST_URL = 'http://65.0.99.17:9000'
-        SONAR_TOKEN    = credentials('token')
+        SONAR_HOST_URL = 'http://13.219.224.234:9000/'
+        SONAR_TOKEN    = credentials('sonar_token')
     }
 
     stages {
@@ -20,8 +20,8 @@ pipeline {
                 echo "Running SonarQube Scan..."
                 sh '''
                 sonar-scanner \
-                -Dsonar.projectKey=test \
-                -Dsonar.projectName=test \
+                -Dsonar.projectKey=production_live \
+                -Dsonar.projectName=production_live \
                 -Dsonar.projectVersion=1.0 \
                 -Dsonar.sources=app/backend,app/frontend \
                 -Dsonar.host.url=$SONAR_HOST_URL \

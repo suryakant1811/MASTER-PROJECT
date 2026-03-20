@@ -1,0 +1,65 @@
+---
+- name: Install SonarQube
+  hosts: sonar_server
+  become: true
+
+  tasks:
+
+    - name: Install dependencies
+      apt:
+        name: [openjdk-17-jdk, unzip, wget]
+        state: present
+        update_cache: yes
+
+    - name: Download and extract SonarQube
+      unarchive:
+        src: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-10.3.0.82913.zip"
+        dest: /opt/
+        remote_src: yes
+        creates: /opt/sonarqube-10.3.0.82913
+
+    - name: Rename SonarQube folder
+      command:
+        cmd: mv /opt/sonarqube-10.3.0.82913 /opt/sonarqube
+        creates: /opt/sonarqube
+
+    - name: Create sonaradmin user
+      user:
+        name: sonaradmin
+        state: present
+
+    - name: Set ownership
+      file:
+        path: /opt/sonarqube
+        owner: sonaradmin
+        group: sonaradmin
+        recurse: yes
+
+    - name: Download and extract Sonar Scanner
+      unarchive:
+        src: "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip"
+        dest: /opt/
+        remote_src: yes
+        creates: /opt/sonar-scanner-5.0.1.3006-linux
+
+    - name: Rename Sonar Scanner folder
+      command:
+        cmd: mv /opt/sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+        creates: /opt/sonar-scanner
+
+    - name: Add sonar-scanner to PATH
+      lineinfile:
+        path: /etc/environment
+        line: 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/sonar-scanner/bin"'
+
+    - name: Start SonarQube as sonaradmin
+      shell: su - sonaradmin -c "/opt/sonarqube/bin/linux-x86-64/sonar.sh start"
+
+    - name: Wait for SonarQube to be ready
+      wait_for:
+        port: 9000
+        timeout: 120
+
+    - name: Done
+      debug:
+        msg: "SonarQube ready at http://{{ ansible_host }}:9000  |  admin / admin"
