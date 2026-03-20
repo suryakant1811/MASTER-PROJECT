@@ -1,0 +1,32 @@
+---
+- name: Install Trivy
+  hosts: sonar_server
+  become: true
+
+  tasks:
+
+    - name: Add Trivy GPG key
+      shell: |
+        curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | \
+        gpg --dearmor -o /usr/share/keyrings/trivy.gpg
+      args:
+        creates: /usr/share/keyrings/trivy.gpg
+
+    - name: Add Trivy repo
+      copy:
+        dest: /etc/apt/sources.list.d/trivy.list
+        content: "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main\n"
+
+    - name: Install Trivy
+      apt:
+        name: trivy
+        state: present
+        update_cache: yes
+
+    - name: Verify Trivy
+      shell: trivy --version
+      register: trivy_version
+
+    - name: Done
+      debug:
+        msg: "{{ trivy_version.stdout }} is ready to go!"
