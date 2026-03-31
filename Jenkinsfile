@@ -109,7 +109,7 @@ pipeline {
 // SMTP server: smtp.gmail.com
 // SMTP Port: 587
 // Use SMTP Authentication: ✔
-// Username: yourgmail@gmail.com     //google app password
+// Username: yourgmail@gmail.com     //google app password use latest 
 // Password: Gmail App Password
 // Use TLS: ✔
 
