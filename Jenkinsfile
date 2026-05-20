@@ -144,7 +144,7 @@ pipeline {
 // sudo chown -R sonaradmin:sonaradmin /opt/sonarqube
 // sudo su - sonaradmin
 // cd /opt/sonarqube/bin/linux-x86-64
-// sudo ./sonar.sh start
+//  ./sonar.sh start
 // ls /opt ->  sonarqube
 
 // cd /opt
