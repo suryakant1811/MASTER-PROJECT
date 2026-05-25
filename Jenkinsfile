@@ -147,6 +147,8 @@ pipeline {
 //  ./sonar.sh start
 // ls /opt ->  sonarqube
 
+ // uppar wala separe me kr sakte ho jenkins se but sonar scanner jenkins wale me he hoga
+
 // cd /opt
 // sudo wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
 // sudo unzip sonar-scanner-cli-5.0.1.3006-linux.zip
